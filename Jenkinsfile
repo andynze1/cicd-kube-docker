@@ -7,7 +7,7 @@ pipeline {
     }
 */
     environment {
-        registry = "andynze4/vprofileapp"
+        registry = "andynze4/vproappdock"
         registryCredential = "dockerhub"
     }
     stages{
