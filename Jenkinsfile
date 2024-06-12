@@ -31,7 +31,7 @@ pipeline {
             }
         }
 
-        stage ('CODE ANALYSIS WITH CHECKSTYLE') {
+        stage('CODE ANALYSIS WITH CHECKSTYLE') {
             steps {
                 sh 'mvn checkstyle:checkstyle'
             }
@@ -42,7 +42,7 @@ pipeline {
             }
         }
 
-        stage('CODE ANALYSIS with SONARQUBE') {
+        stage('CODE ANALYSIS WITH SONARQUBE') {
             environment {
                 scannerHome = tool 'mysonarscanner4'
             }
@@ -63,19 +63,19 @@ pipeline {
             }
         }
 
-        stage("Build Docker App Image") {
+        stage('Build Docker App Image') {
             steps {
                 script {
-                    dockerImage = docker.build registry + ":V$BUILD_NUMBER"
+                    dockerImage = docker.build("${registry}:V${BUILD_NUMBER}")
                 }
             }
         }
 
-        stage("Upload Image") {
+        stage('Upload Image') {
             steps {
                 script {
                     docker.withRegistry('', registryCredential) {
-                        dockerImage.push("$BUILD_NUMBER")
+                        dockerImage.push("${BUILD_NUMBER}")
                         dockerImage.push('latest')
                     }
                 }
@@ -84,14 +84,14 @@ pipeline {
 
         stage('Remove Unused Docker Image') {
             steps {
-                sh "docker rmi $registry:$BUILD_NUMBER"
+                sh "docker rmi ${registry}:V${BUILD_NUMBER}"
             }
         }
 
-        stage("Kubernetes Deploy") {
+        stage('Kubernetes Deploy') {
             agent { label 'KOPS' }
             steps {
-                sh "helm upgrade --install --force vproifle-stack helm/vprofilecharts --set appimage=${registry}:${BUILD_NUMBER} --namespace prod"
+                sh "helm upgrade --install --force vprofile-stack helm/vprofilecharts --set appimage=${registry}:V${BUILD_NUMBER} --namespace prod"
             }
         }
     }
